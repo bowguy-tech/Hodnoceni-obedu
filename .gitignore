@@ -1,3 +1,5 @@
 API/node_modules
 API/package.json
 API/package-lock.json
+API/.env
+API/images/*
