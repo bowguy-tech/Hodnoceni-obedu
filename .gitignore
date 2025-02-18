@@ -3,4 +3,4 @@ API/package.json
 API/package-lock.json
 API/.env
 API/images/*
-.idea
+.idea/*
