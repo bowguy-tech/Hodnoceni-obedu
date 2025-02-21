@@ -1,0 +1,49 @@
+USE `WA_projekt`;
+
+INSERT INTO `Users` (`Name`) VALUES 
+('Alice'),
+('Bob'),
+('Charlie'),
+('David'),
+('Eve');
+
+-- Insert Meals
+INSERT INTO `Meals` (`Name`, `Type`, `Description`) VALUES 
+('Pasta Carbonara', 'Italian', 'Creamy pasta with pancetta'),
+('Margherita Pizza', 'Italian', 'Classic pizza with tomato, mozzarella, and basil'),
+('Sushi Platter', 'Japanese', 'Assorted sushi rolls with soy sauce'),
+('Taco Fiesta', 'Mexican', 'Spicy beef tacos with salsa'),
+('Chicken Curry', 'Indian', 'Spicy chicken curry with rice');
+
+INSERT INTO `Menu` (`date`) VALUES 
+('2025-02-18'),
+('2025-02-19'),
+('2025-02-20');
+
+INSERT INTO `Item` (`Meals_id`, `Menu_id`) VALUES 
+(1, 1),
+(2, 1),
+(3, 2),
+(4, 2),
+(5, 3);
+
+INSERT INTO `Ratings` (`User_id`, `Portion_size`, `Food_temperature`, `Willing_to_pay`, `Food_appearance`, `Item_id`, `img_location`, `img_name`) VALUES 
+(1, 5, 4, 4, 5, 1, '/images/ratings/', 'rating1.jpg'),
+(2, 3, 3, 3, 3, 2, '/images/ratings/', 'rating2.jpg'),
+(3, 4, 5, 5, 4, 3, '/images/ratings/', 'rating3.jpg'),
+(4, 2, 2, 2, 2, 4, '/images/ratings/', 'rating4.jpg'),
+(5, 5, 5, 5, 5, 5, '/images/ratings/', 'rating5.jpg');
+
+INSERT INTO `feedback` (`name`, `description`, `Users_id`) VALUES 
+('Service Feedback', 'Great service and friendly staff.', 1),
+('Food Quality', 'Loved the sushi, very fresh.', 2),
+('Pricing Concern', 'Meals could be a little cheaper.', 3),
+('Ambience', 'Nice atmosphere but a bit noisy.', 4),
+('Menu Suggestion', 'More vegetarian options please.', 5);
+
+INSERT INTO `img` (`name`, `location`, `feedback_id`) VALUES 
+('service.jpg', '/images/feedback/', 1),
+('sushi.jpg', '/images/feedback/', 2),
+('pricing.jpg', '/images/feedback/', 3),
+('ambience.jpg', '/images/feedback/', 4),
+('vegetarian.jpg', '/images/feedback/', 5);
