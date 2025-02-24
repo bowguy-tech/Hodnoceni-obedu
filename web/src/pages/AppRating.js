@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import '../App.css'; // sdílíš styly, případně uprav dle potřeby
+import '../App.css';
+import useAuthRedirect from "../hooks/useAuthRedirect";
 
 function OhodnotAplikaci() {
+  useAuthRedirect();
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [imageFile, setImageFile] = useState(null);

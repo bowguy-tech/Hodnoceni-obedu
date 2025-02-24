@@ -1,7 +1,9 @@
 import React from 'react';
-import '../App.css'; 
+import '../App.css';
+import useAuthRedirect from '../hooks/useAuthRedirect';
 
 function RatingPage() {
+  useAuthRedirect();
   return (
     <div className="container">
       <header>

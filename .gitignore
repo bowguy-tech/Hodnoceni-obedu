@@ -4,3 +4,8 @@ API/package-lock.json
 API/.env
 API/images/*
 .idea/*
+
+web/node_modules
+web/package-lock.json
+web/package.json
+web/README.md

@@ -75,7 +75,7 @@ form {
 }
 
 
-input[type="email"],
+input[type="username"],
 input[type="password"] {
   display: block;
   width: 100%;
@@ -88,7 +88,7 @@ input[type="password"] {
   font-size: 0.9rem;
 }
 
-input[type="email"]:focus,
+input[type="username"]:focus,
 input[type="password"]:focus {
   outline: none;
   border-color: #4A90E2;

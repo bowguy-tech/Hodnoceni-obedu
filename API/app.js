@@ -7,9 +7,10 @@ const {json} = require("express");
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const cors = require('cors');
 
 const app = express()
-const port = 3000
+const port = 3001
 
 
 app.use(express.json({ limit: '10mb' }));
@@ -19,6 +20,7 @@ app.use(session({
     saveUninitialized: true,
     cookie: { secure: false }
 }));
+app.use(cors());
 
 const IMAGE_DIR = path.join(__dirname, 'images');
 function saveImage(base64) {
@@ -148,7 +150,7 @@ const scheduleDailyMenu = async () => {
     }
 };
 setInterval(scheduleDailyMenu, 24 * 60 * 60 * 1000);
-try {scheduleDailyMenu();} catch {}
+//try {scheduleDailyMenu();} catch {}
 
 const getUser = async (username) => {
     try {
@@ -203,10 +205,6 @@ const checkUser = async (username, password) => {
 };
 
 const basicAuth = async (req, res, next) => {
-    if (req.session.username) {
-        return next();
-    }
-
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Basic ')) {
         return res.status(401).json({ error: 'Wrong auth format.' });

@@ -1,8 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import useAuthRedirect from '../hooks/useAuthRedirect';
 
 function MainPage() {
-  const navigate = useNavigate();
+    useAuthRedirect();
+    const navigate = useNavigate();
 
   // Přesměrování na stránku s hodnocením oběda
   const handleMealClick = () => {
@@ -119,9 +121,6 @@ function MainPage() {
 
         {/* ========== GALERIE (posuvná) ========== */}
         <div className="gallery-block" style={{ marginBottom: '30px' }}>
-          <h2 className="gallery-title" style={{ textAlign: 'center', marginBottom: '15px' }}>
-            Galerie
-          </h2>
           <div
             className="gallery-container"
             style={{
