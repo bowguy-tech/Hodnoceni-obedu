@@ -11,6 +11,7 @@ const crypto = require('crypto');
 const app = express()
 const port = 3000
 
+
 app.use(express.json({ limit: '10mb' }));
 app.use(session({
     secret: 'my-secret-key',
@@ -21,6 +22,7 @@ app.use(session({
 
 const IMAGE_DIR = path.join(__dirname, 'images');
 function saveImage(base64) {
+    if (!base64) return null;
     try {
         const buffer = Buffer.from(base64, 'base64');
         const fileName = `${crypto.randomUUID()}.png`;
@@ -46,6 +48,7 @@ function getImage(fileName) {
         throw new Error('Error retrieving image: ' + error.message);
     }
 }
+
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -59,6 +62,89 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0
 });
+
+const addDailyMenu = async () => {
+    const browser = await puppeteer.launch({ headless: true });
+    try {
+        const page = await browser.newPage();
+
+        await page.setRequestInterception(true);
+        page.on('request', (req) => {
+            if (['stylesheet', 'image', 'font'].includes(req.resourceType())) {
+                req.abort();
+            } else {
+                req.continue();
+            }
+        });
+
+
+        const url = 'https://strav.nasejidelna.cz/0341/login';
+        await page.goto(url);
+        const todayMenu = await page.$('.jidelnicekDen');
+        const dateTag = await todayMenu.$$('*');
+        const date = (await dateTag[0].evaluate(el => el.id)).slice(4);
+        const formattedDate = new Date(date).toISOString().split('T')[0];
+
+        await pool.promise().execute("CALL AddMenu(?)", [formattedDate]);
+
+        const lunches = await dateTag[1].$$(':scope > *');
+        let menu = [];
+
+        let soup = null;
+        let drink = null;
+        for (let index in lunches) {
+            if (index > 3) {
+                const lunch = lunches[index];
+                let food = (await lunch.$$(':scope > *'))[2];
+
+                const foodText = await food.evaluate(el => {
+                    let text = '';
+                    for (let node of el.childNodes) {
+                        if (node.nodeType === Node.TEXT_NODE) {
+                            text += node.textContent.trim();
+                        }
+                    }
+                    return text;
+                });
+
+                let foods = foodText.split(',');
+                soup = foods.shift().trim();
+                drink = foods.pop().trim();
+                for (let ij in foods) {
+                    foods[ij] = foods[ij].trim()
+                }
+                let mainCourse = foods.join(' ').trim();
+                menu.push({ name: mainCourse, type: 'Main Course', description: mainCourse });
+            }
+        }
+        if (soup) {
+            menu.push({ name: soup, type: 'Soup', description: soup });
+        }
+        if (drink) {
+            menu.push({ name: drink, type: 'Drink', description: drink });
+        }
+        for (let item of menu) {
+            await pool.promise().execute("CALL AddItemToMenu(?, ?, ?, ?)", [item.name, item.type, item.description, formattedDate]);
+        }
+        await browser.close();
+    } catch (err) {
+        console.log(err)
+    } finally {
+        await browser.close();
+    }
+
+};
+let lastRunDate = null;
+const scheduleDailyMenu = async () => {
+    const today = new Date().toISOString().split('T')[0];
+    if (lastRunDate !== today) {
+        await addDailyMenu();
+        lastRunDate = today;
+        console.log(`Daily menu added for ${today}`);
+    }
+};
+setInterval(scheduleDailyMenu, 24 * 60 * 60 * 1000);
+scheduleDailyMenu();
 
 const getUser = async (username) => {
     try {
@@ -83,6 +169,15 @@ const checkUser = async (username, password) => {
     const page = await browser.newPage();
     const url = 'https://strav.nasejidelna.cz/0341/login';
 
+    await page.setRequestInterception(true);
+        page.on('request', (req) => {
+            if (['stylesheet', 'image', 'font'].includes(req.resourceType())) {
+                req.abort();
+            } else {
+                req.continue();
+            }
+        });
+
     await page.goto(url);
     await page.type('#j_username', username);
     await page.type('#j_password', password);
@@ -96,68 +191,12 @@ const checkUser = async (username, password) => {
     const correct_url = 'https://strav.nasejidelna.cz/0341/faces/secured/main.jsp?status=true&printer=&keyboard=&terminal=false'
     if (result_url === correct_url) {
         if ((await getUser(username)).length === 0) {
-        await setUser(username)
+        await SaveUser(username)
     }
         return true
     }
     return false
 };
-
-const getMenu = async (amount,page,filter) => {
-
-};
-const SaveMenu = async () => {};
-const getTodayMenu = async () => {
-    const browser = await puppeteer.launch({headless: true});
-    const page = await browser.newPage();
-    const url = 'https://strav.nasejidelna.cz/0341/login';
-
-    await page.goto(url);
-    const todayMenu = await page.$('.jidelnicekDen');
-    const dateTag = await todayMenu.$$('*');
-    const date = (await dateTag[0].evaluate(el => el.id)).slice(4);
-
-    if ((await getMenuDate(date)).length === 0) {
-        const lunches = await dateTag[1].$$(':scope > *');
-
-        let menu = [];
-        let soup;
-        let drink;
-        for (let index in lunches) {
-            if (index > 3) {
-                const lunch = lunches[index]
-                let food = (await lunch.$$(':scope > *'))[2]
-                const foodText = await food.evaluate(el => {
-                    let text = '';
-                    for (let node of el.childNodes) {
-                        if (node.nodeType === Node.TEXT_NODE) {
-                            text += node.textContent.trim();
-                        }
-                    }
-                    return text
-                });
-                food = foodText.split(',');
-                soup = food[0].trim();
-                food[0] = '';
-                drink = food[food.length - 1].trim();
-                food[food.length - 1] = '';
-
-                let main = ''
-                for (i in food) {
-                    main += food[i].trim() + ' '
-                }
-                menu.push(main.trim())
-            }
-        }
-        menu.push(soup);
-        menu.push(drink);
-        for (let i in menu) {
-                console.log(menu[i]);
-            }
-        return 1
-    }
-    return 0
-}
 
 const basicAuth = async (req, res, next) => {
     if (req.session.username) {
@@ -185,25 +224,74 @@ const basicAuth = async (req, res, next) => {
         return res.status(500).json({ error: 'Internal server error' });
     }
 };
-
 app.get('/login', basicAuth, (req, res) => {
   res.json('success');
 })
 
-app.get('/menu', async (req, res) => {
-    res.json();
+app.get('/menu', basicAuth, async (req, res) => {
+
 })
 
-app.get('/image', async (req, res) => {
-    const {file} = req.body;
-    res.json(getImage(file));
-})
+app.get('/feedback', basicAuth, async (req, res) => {
+    try {
+        const [rows] = await pool.promise().query("CALL GetFeedback()");
+        for (let feedback of rows[0]) {
+            if (feedback.image) {
+                try {
+                    feedback.image = getImage(feedback.image);
+                } catch (error) {
+                    feedback.image = null;
+                }
+            }
+        }
+        res.json(rows[0]);
+    } catch (err) {
+        console.error("Database error:", err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+app.post('/feedback', basicAuth, async (req, res) => {
+    try {
+        const {title, description, image, rating } = req.body;
+        const username = req.session.username;
+        if (!username || !title || !description || rating == null) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
 
-app.post('/image', async (req, res) => {
-    const {data} = req.body;
-    saveImage(data);
-    res.json(1);
-})
+        const imageName = saveImage(image);
+
+        await pool.promise().execute("CALL AddFeedback(?, ?, ?, ?, ?)", [username, title, description, imageName, rating]);
+
+        res.json({ message: 'Feedback added successfully' });
+    } catch (err) {
+        console.error("Database error:", err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.post('/rate', basicAuth, async (req, res) => {
+    try {
+        const { itemId, portionSize, foodTemperature, willingToPay, foodAppearance, image } = req.body;
+        const username = req.session.username;
+
+        if (!itemId || !portionSize || !foodTemperature || !willingToPay || !foodAppearance) {
+            return res.status(400).json({ error: "Missing required fields" });
+        }
+
+        let imageFileName = null;
+        if (image) {
+            imageFileName = saveImage(image);
+        }
+
+        const sql = "CALL AddRating(?, ?, ?, ?, ?, ?, ?)";
+        await pool.promise().execute(sql, [username, itemId, portionSize, foodTemperature, willingToPay, foodAppearance, imageFileName]);
+
+        res.json({ success: true, message: "Rating submitted successfully" });
+    } catch (err) {
+        console.error("Error adding rating:", err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
