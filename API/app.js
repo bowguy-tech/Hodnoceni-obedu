@@ -138,13 +138,17 @@ let lastRunDate = null;
 const scheduleDailyMenu = async () => {
     const today = new Date().toISOString().split('T')[0];
     if (lastRunDate !== today) {
-        await addDailyMenu();
+        try{
+            await addDailyMenu();
+        } catch (err) {
+
+        }
         lastRunDate = today;
         console.log(`Daily menu added for ${today}`);
     }
 };
 setInterval(scheduleDailyMenu, 24 * 60 * 60 * 1000);
-scheduleDailyMenu();
+try {scheduleDailyMenu();} catch {}
 
 const getUser = async (username) => {
     try {
@@ -229,8 +233,42 @@ app.get('/login', basicAuth, (req, res) => {
 })
 
 app.get('/menu', basicAuth, async (req, res) => {
+    try {
+        const username = req.session.username;
+        if (!username) {
+            return res.status(400).json({ error: "Username is required" });
+        }
 
-})
+        let page = parseInt(req.query.page) || 1;
+        let limit = parseInt(req.query.limit) || 5;
+        let offset = (page - 1) * limit;
+
+        const [rows] = await pool.promise().execute("CALL getMenu(?, ?, ?)", [username, limit, offset]);
+
+        const groupedMeals = {};
+
+        rows.forEach(row => {
+            const { date, ...mealData } = row;
+            const formattedDate = date instanceof Date ? date.toISOString().split('T')[0] : date.split('T')[0];
+
+            if (formattedDate) {
+                if (!groupedMeals[formattedDate]) {
+                    groupedMeals[formattedDate] = [];
+                }
+
+                groupedMeals[formattedDate].push(mealData);
+            }
+        });
+
+        res.json({
+            meals: groupedMeals
+        });
+
+    } catch (error) {
+        console.error('Database error:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 app.get('/feedback', basicAuth, async (req, res) => {
     try {
@@ -264,7 +302,6 @@ app.post('/feedback', basicAuth, async (req, res) => {
 
         res.json({ message: 'Feedback added successfully' });
     } catch (err) {
-        console.error("Database error:", err);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
