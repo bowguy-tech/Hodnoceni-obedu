@@ -1,5 +1,5 @@
 import React from 'react';
-import '../App.css'; // sdílíš styly, případně uprav dle potřeby
+import '../App.css'; 
 
 function RatingPage() {
   return (
@@ -44,11 +44,10 @@ function RatingPage() {
             <label htmlFor="teplota">Vyberte hodnocení:</label>
             <select id="teplota" name="teplota" defaultValue="">
             <option value="" disabled></option>
-              <option value="1">1 - Velmi špatná</option>
-              <option value="2">2 - Špatná</option>
-              <option value="3">3 - Průměrná</option>
-              <option value="4">4 - Dobrá</option>
-              <option value="5">5 - Výborná</option>
+              <option value="1">1 - Moc studené</option>
+              <option value="2">2 - Ideální teplota</option>
+              <option value="3">3 - Moc teplé</option>
+              
             </select>
           </div>
         </div>
