@@ -1,33 +1,68 @@
 import React, { useState } from 'react';
 import '../App.css';
 import useAuthRedirect from "../hooks/useAuthRedirect";
+import Cookies from "js-cookie";
+import { useNavigate } from 'react-router-dom';
 
 function OhodnotAplikaci() {
   useAuthRedirect();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [imageFile, setImageFile] = useState(null);
+  const [base64, setBase64] = useState("");
   const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState('');
-  const [recommend, setRecommend] = useState(false);
 
   const handleImageChange = (e) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setImageFile(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        setBase64(reader.result); // Base64 string
+      };
+      reader.onerror = (error) => {
+        console.error("Error converting image to Base64", error);
+      };
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Titulek:', title);
-    console.log('Popis:', description);
-    console.log('Obrázek:', imageFile);
-    console.log('Hodnocení:', rating);
-    console.log('Komentář:', comment);
-    console.log('Doporučuji aplikaci:', recommend);
-    alert('Hodnocení bylo odesláno!');
+ const handleSubmit = (e) => {
+  e.preventDefault();
+
+  const sendFeedback = async () => {
+    try {
+      const image = base64.slice(22);
+      const credentials = Cookies.get('authToken');
+
+      const feedbackData = {
+        title,
+        description,
+        image,
+        rating
+      };
+      console.log(JSON.stringify(feedbackData))
+
+      const response = await fetch("http://localhost:3001/feedback", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          'Authorization': credentials,
+        },
+        body: JSON.stringify(feedbackData),
+      });
+
+      console.log(response);
+      if (!response.ok) {
+        throw new Error("Failed to submit feedback");
+      }
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      alert("Chyba při odesílání hodnocení. Zkuste to prosím znovu.");
+    }
   };
+
+  sendFeedback();
+};
 
   return (
     <div className="container">
@@ -79,20 +114,20 @@ function OhodnotAplikaci() {
         <div>
           <label htmlFor="rating">Hodnocení aplikace (1-5):</label>
           <select
-            id="rating"
-            name="rating"
-            value={rating}
-            onChange={(e) => setRating(Number(e.target.value))}
-            required
+              id="rating"
+              name="rating"
+              value={rating}
+              onChange={(e) => setRating(Number(e.target.value))}
+              required
           >
             <option value="0" disabled>
               Vyberte hodnocení
             </option>
+            <option value="5">5 - Výborná</option>
+            <option value="4">4 - Dobrá</option>
+            <option value="3">3 - Průměrná</option>
             <option value="1">1 - Velmi špatná</option>
             <option value="2">2 - Špatná</option>
-            <option value="3">3 - Průměrná</option>
-            <option value="4">4 - Dobrá</option>
-            <option value="5">5 - Výborná</option>
           </select>
         </div>
 

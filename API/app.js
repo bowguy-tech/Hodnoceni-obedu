@@ -150,7 +150,7 @@ const scheduleDailyMenu = async () => {
     }
 };
 setInterval(scheduleDailyMenu, 24 * 60 * 60 * 1000);
-//try {scheduleDailyMenu();} catch {}
+try {scheduleDailyMenu();} catch {}
 
 const getUser = async (username) => {
     try {
@@ -288,7 +288,7 @@ app.get('/feedback', basicAuth, async (req, res) => {
 });
 app.post('/feedback', basicAuth, async (req, res) => {
     try {
-        const {title, description, image, rating } = req.body;
+        const {title, description, image, rating} = req.body;
         const username = req.session.username;
         if (!username || !title || !description || rating == null) {
             return res.status(400).json({ error: 'Missing required fields' });
