@@ -1,9 +1,12 @@
 import React from 'react';
 import '../App.css';
 import useAuthRedirect from '../hooks/useAuthRedirect';
+import { useParams } from 'react-router-dom';
 
 function RatingPage() {
   useAuthRedirect();
+  const { id } = useParams();
+
   return (
     <div className="container">
       <header>
@@ -13,9 +16,9 @@ function RatingPage() {
 
       <div className="meal-info">
         {/* Fotka jídla (pokud je v public složce) */}
-       
 
-        <h2 className="meal-title">Kuřecí řízek s bramborovou kaší</h2>
+
+        <h2 className="meal-title">{id}</h2>
         <p className="meal-description">Ochutnej dnešní oběd a ohodnoť!</p>
       </div>
 
@@ -49,7 +52,7 @@ function RatingPage() {
               <option value="1">1 - Moc studené</option>
               <option value="2">2 - Ideální teplota</option>
               <option value="3">3 - Moc teplé</option>
-              
+
             </select>
           </div>
         </div>

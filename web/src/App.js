@@ -12,7 +12,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/main" element={<MainPage />} />
-        <Route path="/rating" element={<RatingPage />} />
+        <Route path="/rating/:id" element={<RatingPage />} />
         <Route path="/rate-app" element={<AppRating />} />
       </Routes>
     </Router>

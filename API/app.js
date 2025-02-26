@@ -37,6 +37,9 @@ function saveImage(base64) {
     }
 }
 function getImage(fileName) {
+    if (!fileName) {
+        return null
+    }
     try {
         const filePath = path.join(IMAGE_DIR, fileName);
 
@@ -130,7 +133,6 @@ const addDailyMenu = async () => {
         }
         await browser.close();
     } catch (err) {
-        console.log(err)
     } finally {
         await browser.close();
     }
@@ -233,34 +235,31 @@ app.get('/login', basicAuth, (req, res) => {
 app.get('/menu', basicAuth, async (req, res) => {
     try {
         const username = req.session.username;
-        if (!username) {
-            return res.status(400).json({ error: "Username is required" });
-        }
 
-        let page = parseInt(req.query.page) || 1;
-        let limit = parseInt(req.query.limit) || 5;
+        let { page, limit } = req.query;
         let offset = (page - 1) * limit;
+        const resp = await pool.promise().execute("CALL getMenu(?, ?, ?)", [username, limit, offset]);
 
-        const [rows] = await pool.promise().execute("CALL getMenu(?, ?, ?)", [username, limit, offset]);
+        let menuData = resp[0][0]; // Extract the relevant data array
+        let groupedMenu = {};
 
-        const groupedMeals = {};
-
-        rows.forEach(row => {
-            const { date, ...mealData } = row;
-            const formattedDate = date instanceof Date ? date.toISOString().split('T')[0] : date.split('T')[0];
-
-            if (formattedDate) {
-                if (!groupedMeals[formattedDate]) {
-                    groupedMeals[formattedDate] = [];
-                }
-
-                groupedMeals[formattedDate].push(mealData);
+        // Grouping the menu by date
+        menuData.forEach(item => {
+            let dateKey = item.date.toISOString().toString().split('T')[0];
+            if (!groupedMenu[dateKey]) {
+                groupedMenu[dateKey] = [];
             }
+            groupedMenu[dateKey].push({
+                id: item.id,
+                name: item.name,
+                type: item.type,
+                description: item.description,
+                image: getImage(item.images),
+                hasRated: item.has_rated
+            });
         });
 
-        res.json({
-            meals: groupedMeals
-        });
+        res.json(groupedMenu);
 
     } catch (error) {
         console.error('Database error:', error);
