@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
 import '../App.css';
 import useAuthRedirect from "../hooks/useAuthRedirect";
-import Cookies from "js-cookie";
 import { useNavigate } from 'react-router-dom';
+import Cookies from "js-cookie";
 
 function OhodnotAplikaci() {
   useAuthRedirect();
 
+  const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [base64, setBase64] = useState("");
   const [rating, setRating] = useState(0);
+
+  const back = () => {
+        navigate('/main');
+  };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -65,77 +70,89 @@ function OhodnotAplikaci() {
 };
 
   return (
-    <div className="container">
-      <header>
-        <h1 className="header-title">Ohodnoť aplikaci</h1>
-      </header>
+      <div className="container">
 
-      <form onSubmit={handleSubmit}>
-        {/* Titulek */}
-        <div>
-          <label htmlFor="title">Titulek:</label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            placeholder="Zadejte titulek hodnocení"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-          />
-        </div>
-
-        {/* Popis */}
-        <div>
-          <label htmlFor="description">Popis:</label>
-          <textarea
-            id="description"
-            name="description"
-            placeholder="Popište, jak se Vám aplikace líbí"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-          ></textarea>
-        </div>
-
-        {/* Image Upload */}
-        <div>
-          <label htmlFor="image">Nahrát obrázek:</label>
-          <input
-            type="file"
-            id="image"
-            name="image"
-            accept="image/*"
-            onChange={handleImageChange}
-          />
-        </div>
-
-        {/* Výběr hodnocení */}
-        <div>
-          <label htmlFor="rating">Hodnocení aplikace (1-5):</label>
-          <select
-              id="rating"
-              name="rating"
-              value={rating}
-              onChange={(e) => setRating(Number(e.target.value))}
-              required
-          >
-            <option value="0" disabled>
-              Vyberte hodnocení
-            </option>
-            <option value="5">5 - Výborná</option>
-            <option value="4">4 - Dobrá</option>
-            <option value="3">3 - Průměrná</option>
-            <option value="1">1 - Velmi špatná</option>
-            <option value="2">2 - Špatná</option>
-          </select>
-        </div>
-
-        <button type="submit" className="submit-btn">
-          Odeslat hodnocení
+        <button
+            onClick={back}
+            style={{
+              position: 'fixed', top: '20px', left: '20px', cursor: 'pointer',
+              backgroundColor: '#007bff', color: '#fff', border: 'none',
+              padding: '10px 15px', borderRadius: '4px', fontWeight: 'bold', fontSize: '1rem'
+            }}
+        >
+          Back
         </button>
-      </form>
-    </div>
+
+        <header>
+          <h1 className="header-title">Ohodnoť aplikaci</h1>
+        </header>
+
+        <form onSubmit={handleSubmit}>
+          {/* Titulek */}
+          <div>
+            <label htmlFor="title">Titulek:</label>
+            <input
+                type="text"
+                id="title"
+                name="title"
+                placeholder="Zadejte titulek hodnocení"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+            />
+          </div>
+
+          {/* Popis */}
+          <div>
+            <label htmlFor="description">Popis:</label>
+            <textarea
+                id="description"
+                name="description"
+                placeholder="Popište, jak se Vám aplikace líbí"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+            ></textarea>
+          </div>
+
+          {/* Image Upload */}
+          <div>
+            <label htmlFor="image">Nahrát obrázek:</label>
+            <input
+                type="file"
+                id="image"
+                name="image"
+                accept="image/*"
+                onChange={handleImageChange}
+            />
+          </div>
+
+          {/* Výběr hodnocení */}
+          <div>
+            <label htmlFor="rating">Hodnocení aplikace (1-5):</label>
+            <select
+                id="rating"
+                name="rating"
+                value={rating}
+                onChange={(e) => setRating(Number(e.target.value))}
+                required
+            >
+              <option value="0" disabled>
+                Vyberte hodnocení
+              </option>
+              <option value="5">5 - Výborná</option>
+              <option value="4">4 - Dobrá</option>
+              <option value="3">3 - Průměrná</option>
+              <option value="1">1 - Velmi špatná</option>
+              <option value="2">2 - Špatná</option>
+            </select>
+          </div>
+
+          <button type="submit" className="submit-btn">
+            Odeslat hodnocení
+          </button>
+        </form>
+      </div>
   );
 }
 
