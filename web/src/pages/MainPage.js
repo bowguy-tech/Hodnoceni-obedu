@@ -93,12 +93,11 @@ function MainPage() {
                     <h1 className="header-title">Přehled obědů</h1>
                 </header>
 
-                {loading ? (  // Show loading spinner or message for the initial load
+                {loading ? (
                     <div className="loading">Načítání...</div>
                 ) : (
                     menuData.length > 0 ? (
                         menuData.map((dayData, idx) => {
-                            // Iterate through each day (date) and its meals
                             return Object.entries(dayData).map(([date, meals]) => (
                                 <div className="day-block" key={idx}>
                                     <div className="day-date">{date}</div>

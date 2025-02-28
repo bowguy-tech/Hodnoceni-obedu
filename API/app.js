@@ -267,6 +267,12 @@ app.get('/menu', basicAuth, async (req, res) => {
     }
 });
 
+app.get('/item', basicAuth, async (req, res) => {
+    let {id} = req.query;
+    const [resp] = await pool.promise().execute("CALL getItem(?)", [id]);
+    res.json(resp[0]);
+})
+
 app.get('/feedback', basicAuth, async (req, res) => {
     try {
         const [rows] = await pool.promise().query("CALL GetFeedback()");
