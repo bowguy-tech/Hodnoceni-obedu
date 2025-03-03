@@ -236,9 +236,10 @@ app.get('/menu', basicAuth, async (req, res) => {
     try {
         const username = req.session.username;
 
-        let { page, limit } = req.query;
+        let { page, limit, filter} = req.query;
+        console.log(filter);
         let offset = (page - 1) * limit;
-        const resp = await pool.promise().execute("CALL getMenu(?, ?, ?)", [username, limit, offset]);
+        const resp = await pool.promise().execute("CALL getMenu(?, ?, ?, ?)", [username, limit, offset, filter]);
 
         let menuData = resp[0][0]; // Extract the relevant data array
         let groupedMenu = {};

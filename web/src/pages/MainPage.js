@@ -1,49 +1,62 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthRedirect from '../hooks/useAuthRedirect';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCalendarDays,faCheck } from "@fortawesome/free-solid-svg-icons";
 import Cookies from 'js-cookie';
 
 function MainPage() {
     useAuthRedirect();
     const navigate = useNavigate();
-    const [menuData, setMenuData] = useState([]);  // Store the menu data for each page
-    const [loading, setLoading] = useState(true);  // Loading for the initial load
-    const [loadingNextPage, setLoadingNextPage] = useState(false);  // Loading for the next page
-    const [page, setPage] = useState(1);  // Track the current page
+    const [menuData, setMenuData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [loadingNextPage, setLoadingNextPage] = useState(false);
+    const [page, setPage] = useState(1);
+    const [error, setError] = useState(null);
+
+
 
     useEffect(() => {
-        const credentials = Cookies.get('authToken');
+        const queryParams = new URLSearchParams(window.location.search);
+        const filter = queryParams.get("filter");
+        console.log(filter);
 
-        // Fetch menu data with lazy loading
-        fetch(`http://localhost:3001/menu?page=${page}&limit=3`, {
-            method: 'GET',
-            headers: {
-                "Content-Type": "application/json",
-                'Authorization': credentials,
-            },
-        })
-            .then(response => response.json())
-            .then(data => {
-                console.log('API Response:', data);  // Log the response data to check its structure
-                if (data && typeof data === 'object') {
-                    // Only update menuData if it's the first page or new page
-                    if (page === 1) {
-                        setMenuData([data]);  // For the first page, replace old data with new
-                    } else {
-                        setMenuData(prevData => [...prevData, data]);  // Append new page's data
-                    }
-                } else {
-                    console.error('API response is not an object:', data);
+        const fetchData = async () => {
+            try {
+                setError(null); // Reset error before a new request
+                const credentials = Cookies.get('authToken');
+
+                const response = await fetch(`http://localhost:3001/menu?page=${page}&limit=3&filter=${filter}`, {
+                    method: 'GET',
+                    headers: {
+                        "Content-Type": "application/json",
+                        'Authorization': credentials,
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
                 }
-                setLoading(false);  // Set loading to false after data is loaded
-                setLoadingNextPage(false);  // Set next page loading to false
-            })
-            .catch(error => {
-                console.error('Error fetching menu:', error);
-                setLoading(false);  // Ensure loading is stopped even in case of error
-                setLoadingNextPage(false);  // Ensure next page loading is stopped
-            });
-    }, [page]);  // Depend on page so that the page updates trigger a new fetch
+
+                const data = await response.json();
+
+                if (!data || typeof data !== 'object') {
+                    throw new Error("Invalid data format received from API.");
+                }
+
+                setMenuData(prevData => (page === 1 ? [data] : [...prevData, data]));
+
+            } catch (err) {
+                console.error("Error fetching menu:", err);
+                setError(err.message);
+            } finally {
+                setLoading(false);
+                setLoadingNextPage(false);
+            }
+        };
+
+        fetchData();
+    }, [page]);
 
     const logOut = () => {
         Cookies.remove('authToken');
@@ -59,8 +72,8 @@ function MainPage() {
     };
 
     const handleNextPageClick = () => {
-        setLoadingNextPage(true);  // Show loading for the next page
-        setPage(prevPage => prevPage + 1);  // Increment page number to load the next page
+        setLoadingNextPage(true);
+        setPage(prevPage => prevPage + 1);
     };
 
     return (
@@ -90,97 +103,98 @@ function MainPage() {
             <div className="container">
                 <header>
                     <div className="logo">SPŠE Ječná</div>
+                    <div className="filter">
+                        <p>Filters:</p>
+                        <button><FontAwesomeIcon icon={faCalendarDays} /></button>
+                        <button><FontAwesomeIcon icon={faCheck} /></button>
+                    </div>
                     <h1 className="header-title">Přehled obědů</h1>
                 </header>
 
                 {loading ? (
                     <div className="loading">Načítání...</div>
-                ) : (
-                    menuData.length > 0 ? (
-                        menuData.map((dayData, idx) => {
-                            return Object.entries(dayData).map(([date, meals]) => (
-                                <div className="day-block" key={idx}>
-                                    <div className="day-date">{date}</div>
-                                    <div className="meal-list">
-                                        {meals.map(meal => (
-                                            <div className="meal-item" key={meal.id}>
-                                                <div className="meal-name">{meal.name}</div>
-                                                {
-                                                    meal.hasRated === 0 ? (
-                                                        <button
-                                                            onClick={() => handleMealClick(meal.id)}
-                                                            style={{
-                                                                backgroundColor: '#37cc59',
-                                                                color: '#fff',
-                                                                cursor: 'pointer',
-                                                                border: 'none',
-                                                                padding: '8px 12px',
-                                                                borderRadius: '4px',
-                                                                fontWeight: 'bold'
-                                                            }}
-                                                        >
-                                                            Ohodnoť oběd
-                                                        </button>
-                                                    ) : (
-                                                        <button
-                                                            style={{
-                                                                backgroundColor: '#ff0000',
-                                                                color: '#fff',
-                                                                cursor: 'pointer',
-                                                                border: 'none',
-                                                                padding: '8px 12px',
-                                                                borderRadius: '4px',
-                                                                fontWeight: 'bold'
-                                                            }}
-                                                        >
-                                                            Ohodnoceno
-                                                        </button>
-                                                    )
-                                                }
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Gallery for each day - dynamically populated based on meals' images */}
-                                    <div className="gallery-block" style={{ marginBottom: '30px' }}>
-                                        <div
-                                            className="gallery-container"
-                                            style={{
-                                                display: 'flex',
-                                                overflowX: 'auto',
-                                                gap: '10px',
-                                                padding: '10px'
-                                            }}
-                                        >
-                                            {meals.map(meal => {
-                                                if (meal.image) {
-                                                    return (
-                                                        <img
-                                                            key={meal.id}
-                                                            src={`data:image/jpeg;base64,${meal.image}`}
-                                                            alt={meal.name}
-                                                            style={{
-                                                                minWidth: '200px',
-                                                                height: '150px',
-                                                                objectFit: 'cover',
-                                                                borderRadius: '8px'
-                                                            }}
-                                                        />
-                                                    );
-                                                }
-                                                return null; // If no image exists, skip this meal
-                                            })}
+                ) : error ? (
+                    <div className="error">Chyba: {error}</div>
+                ) : menuData.length > 0 ? (
+                    menuData.map((dayData, idx) => (
+                        Object.entries(dayData).map(([date, meals]) => (
+                            <div className="day-block" key={idx}>
+                                <div className="day-date">{date}</div>
+                                <div className="meal-list">
+                                    {(Array.isArray(meals) ? meals : []).map(meal => (
+                                        <div className="meal-item" key={meal.id}>
+                                            <div className="meal-name">{meal.name}</div>
+                                            {meal.hasRated === 0 ? (
+                                                <button
+                                                    onClick={() => handleMealClick(meal.id)}
+                                                    style={{
+                                                        backgroundColor: '#37cc59',
+                                                        color: '#fff',
+                                                        cursor: 'pointer',
+                                                        border: 'none',
+                                                        padding: '8px 12px',
+                                                        borderRadius: '4px',
+                                                        fontWeight: 'bold'
+                                                    }}
+                                                >
+                                                    Ohodnoť oběd
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    style={{
+                                                        backgroundColor: '#ff0000',
+                                                        color: '#fff',
+                                                        cursor: 'pointer',
+                                                        border: 'none',
+                                                        padding: '8px 12px',
+                                                        borderRadius: '4px',
+                                                        fontWeight: 'bold'
+                                                    }}
+                                                >
+                                                    Ohodnoceno
+                                                </button>
+                                            )}
                                         </div>
+                                    ))}
+                                </div>
+
+                                <div className="gallery-block" style={{ marginBottom: '30px' }}>
+                                    <div
+                                        className="gallery-container"
+                                        style={{
+                                            display: 'flex',
+                                            overflowX: 'auto',
+                                            gap: '10px',
+                                            padding: '10px'
+                                        }}
+                                    >
+                                        {(Array.isArray(meals) ? meals : []).map(meal => {
+                                            if (meal.image) {
+                                                return (
+                                                    <img
+                                                        key={meal.id}
+                                                        src={`data:image/jpeg;base64,${meal.image}`}
+                                                        alt={meal.name}
+                                                        style={{
+                                                            minWidth: '200px',
+                                                            height: '150px',
+                                                            objectFit: 'cover',
+                                                            borderRadius: '8px'
+                                                        }}
+                                                    />
+                                                );
+                                            }
+                                            return null;
+                                        })}
                                     </div>
                                 </div>
-                            ));
-                        })
-                    ) : (
-                        <div>No data available</div>  // Handle case when menuData is empty
-                    )
+                            </div>
+                        ))
+                    ))
+                ) : (
+                    <div>No data available</div>
                 )}
 
-                {/* Button to load next page */}
                 <div className="next-page-button">
                     <button
                         onClick={handleNextPageClick}
@@ -196,7 +210,7 @@ function MainPage() {
                             width: '100%',
                             marginTop: '20px'
                         }}
-                        disabled={loadingNextPage}  // Disable the button while loading next page
+                        disabled={loadingNextPage}
                     >
                         {loadingNextPage ? 'Načítám...' : 'Načíst další stránku'}
                     </button>
@@ -207,3 +221,4 @@ function MainPage() {
 }
 
 export default MainPage;
+
