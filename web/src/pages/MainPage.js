@@ -63,6 +63,10 @@ function MainPage() {
         navigate('/');
     };
 
+    const adminNav = () => {
+        navigate('/admin');
+    };
+
     function handleMealClick(id) {
         navigate('/rating/' + id);
     };
@@ -100,13 +104,24 @@ function MainPage() {
                 Logout
             </button>
 
+            <button
+                onClick={adminNav}
+                style={{
+                    position: 'fixed', top: '20px', left: '150px', cursor: 'pointer',
+                    backgroundColor: '#37cc59', color: '#fff', border: 'none',
+                    padding: '10px 15px', borderRadius: '4px', fontWeight: 'bold', fontSize: '1rem'
+                }}
+            >
+                Admin
+            </button>
+
             <div className="container">
                 <header>
                     <div className="logo">SPŠE Ječná</div>
                     <div className="filter">
                         <p>Filters:</p>
-                        <button><FontAwesomeIcon icon={faCalendarDays} /></button>
-                        <button><FontAwesomeIcon icon={faCheck} /></button>
+                        <button><FontAwesomeIcon icon={faCalendarDays}/></button>
+                        <button><FontAwesomeIcon icon={faCheck}/></button>
                     </div>
                     <h1 className="header-title">Přehled obědů</h1>
                 </header>
@@ -158,7 +173,7 @@ function MainPage() {
                                     ))}
                                 </div>
 
-                                <div className="gallery-block" style={{ marginBottom: '30px' }}>
+                                <div className="gallery-block" style={{marginBottom: '30px'}}>
                                     <div
                                         className="gallery-container"
                                         style={{

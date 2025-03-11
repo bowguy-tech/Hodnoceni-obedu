@@ -1,4 +1,22 @@
+/* ===== Global Styles ===== */
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #EAF4FB;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
 
+.container {
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== Header ===== */
 header {
   display: flex;
   align-items: center;
@@ -8,7 +26,6 @@ header {
   margin-bottom: 20px;
 }
 
-
 .logo {
   font-weight: 600;
   font-size: 1.2rem;
@@ -16,21 +33,25 @@ header {
 }
 
 .header-title {
-  font-size: 1.5rem; 
+  font-size: 1.5rem;
   font-weight: 600;
   margin: 0;
 }
 
+/* ===== Tlačítka ===== */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
 .submit-btn {
-  display: inline-block;
   padding: 12px 30px;
   background-color: #4A90E2;
   color: #fff;
-  font-weight: 600;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s;
+  font-size: 1rem;
   margin-top: 5px;
 }
 
@@ -38,21 +59,63 @@ header {
   background-color: #3b7ac0;
 }
 
+/* Fixované tlačítka (např. Logout, Ohodnoť aplikaci) */
+.fixed-btn {
+  position: fixed;
+  top: 20px;
+  padding: 10px 15px;
+  font-size: 1rem;
+}
 
-/* ========== STYLY PRO LOGIN PAGE ========== */
+#rate-app-btn {
+  right: 20px;
+  background-color: #007bff;
+  color: #fff;
+}
 
+#logout-btn {
+  left: 20px;
+  background-color: #007bff;
+  color: #fff;
+}
 
+/* ===== Formuláře (přihlášení, hodnocení) ===== */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
 
+form label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+form input[type="text"],
+form input[type="password"],
+form input[type="email"],
+form textarea,
+form select,
+form input[type="file"] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+/* ===== Přihlašovací Stránka ===== */
 .container-login {
-  max-width: 30px;
-  margin: 12vh auto; 
+  max-width: 400px;
+  margin: 12vh auto;
   background-color: #fff;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   padding: 20px;
-  text-align: center; 
+  text-align: center;
 }
-
 
 .container-login .header-title {
   font-size: 1.3rem;
@@ -60,89 +123,22 @@ header {
   margin-bottom: 10px;
 }
 
-
 .container-login header {
   border-bottom: 1px solid #eee;
   padding-bottom: 10px;
 }
 
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px; 
-  margin-top: 15px;
-}
-
-
-input[type="username"],
-input[type="password"] {
-  display: block;
-  width: 100%;
-  max-width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  transition: border-color 0.2s;
-  box-sizing: border-box;
-  font-size: 0.9rem;
-}
-
-input[type="username"]:focus,
-input[type="password"]:focus {
-  outline: none;
-  border-color: #4A90E2;
-}
-
-
-.submit-btn {
-  display: inline-block;
-  width: 100%;
-  padding: 10px;
-  background-color: #4A90E2;
-  color: #fff;
-  font-weight: 600;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  margin-top: 5px;
-  font-size: 0.9rem;
-}
-
-.submit-btn:hover {
-  background-color: #3b7ac0;
-}
-
-
-/* ========== STYLY PRO MAIN PAGE ========== */
-
-.container {
-  max-width: 800px;
-  margin: 50px auto;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-}
-
-
-.container header .header-title {
-  font-size: 1.3rem; 
-  margin-left: 20px;
-}
-
-
+/* ===== Hlavní Stránka (Menu, Galerie, Filtry) ===== */
 .day-block {
   margin-bottom: 30px;
 }
+
 .day-date {
   font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 15px;
   color: #4A90E2;
 }
-
 
 .meal-list {
   display: flex;
@@ -157,26 +153,37 @@ input[type="password"]:focus {
   background-color: #F7F7F7;
   border-radius: 6px;
   padding: 10px;
-  cursor: pointer; 
 }
 
 .meal-name {
   font-weight: 500;
 }
 
-
-.star-display {
-  display: inline-block;
-  color: #FFC107;
-  font-size: 1rem;
-}
-.star-display .inactive {
-  color: #ccc;
+/* Galerie – horizontálně scrollovatelná */
+.gallery-block {
+  margin-bottom: 30px;
 }
 
+.gallery-title {
+  text-align: center;
+  margin-bottom: 15px;
+}
 
-/* ========== STYLY PRO RATING PAGE ========== */
+.gallery-container {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding: 10px;
+}
 
+.gallery-container img {
+  min-width: 200px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* ===== Hodnocení Jídla ===== */
 .meal-info {
   text-align: center;
   margin-bottom: 30px;
@@ -214,7 +221,7 @@ input[type="password"]:focus {
   color: #4A90E2;
 }
 
-
+/* Star rating – pokud by se používalo, jinak volba pomocí selectů */
 .star-rating {
   direction: rtl;
   display: inline-flex;
@@ -241,62 +248,43 @@ input[type="password"]:focus {
   color: #FFC107;
 }
 
-/* Komentář */
-.comment-section {
-  margin-bottom: 20px;
+/* ===== Filtry (v hlavní stránce) ===== */
+.filter {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
-.comment-section label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 500;
+.filter p {
+  margin: 0 5px;
 }
 
-.comment-section textarea {
-  width: 100%;
-  padding: 10px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  resize: vertical;
-  font-family: 'Poppins', sans-serif;
+/* ===== Responsivita ===== */
+@media only screen and (max-width: 768px) {
+  .container {
+    margin: 10px;
+    padding: 10px;
+    max-width: 100%;
+  }
+
+  header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .day-block {
+    margin-bottom: 20px;
+  }
+
+  .gallery-container img {
+    min-width: 150px;
+    height: 100px;
+  }
+
+  .submit-btn,
+  button.fixed-btn {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
 }
-
-
-
-
-.container form div {
-  margin-bottom: 15px;
-}
-
-.container form label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-}
-
-.container form input[type="text"],
-.container form textarea,
-.container form select,
-.container form input[type="file"] {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-
-.submit-btn {
-  padding: 10px 20px;
-  background-color: #4A90E2;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-}
-
-.submit-btn:hover {
-  background-color: #3b7ac0;
-}
-
-

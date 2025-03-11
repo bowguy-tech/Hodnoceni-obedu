@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const cors = require('cors');
-
+const sharp = require('sharp');
 const app = express()
 const port = 3001
 
@@ -30,10 +30,15 @@ function saveImage(base64) {
         const fileName = `${crypto.randomUUID()}.png`;
         const filePath = path.join(IMAGE_DIR, fileName);
 
-        fs.writeFileSync(filePath, buffer);
+        sharp(buffer)
+            .resize({ width: 300 })
+            .toFile(filePath, (err, info) => {
+                if (err) throw new Error('Error saving image: ' + err.message);
+            });
+
         return fileName;
     } catch (error) {
-        throw new Error('Error saving image: ' + error.message);
+        throw new Error('Error processing image: ' + error.message);
     }
 }
 function getImage(fileName) {
@@ -228,6 +233,13 @@ const basicAuth = async (req, res, next) => {
         return res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+app.get('/admin', basicAuth, async (req, res) => {
+    const username = req.session.username;
+    const isadmin = await pool.promise().execute("CALL isAdmin(?)", [username]);
+    res.status(200).json(isadmin[0][0][0]['admin']);
+})
+
 app.get('/login', basicAuth, (req, res) => {
   res.json('success');
 })
@@ -246,7 +258,7 @@ app.get('/menu', basicAuth, async (req, res) => {
 
         // Grouping the menu by date
         menuData.forEach(item => {
-            let dateKey = item.date.toISOString().toString().split('T')[0];
+            let dateKey = new Date(item.date).toLocaleDateString("cs-CZ");
             if (!groupedMenu[dateKey]) {
                 groupedMenu[dateKey] = [];
             }

@@ -17,7 +17,7 @@ function Login() {
     const credentials = btoa(`${username}:${password}`);
 
     try {
-      const response = await fetch('http://localhost:3001/login', {
+      const response = await fetch('http://localhost:3001/admin', {
         method: 'GET',
         headers: {
           'Authorization': `Basic ${credentials}`,
@@ -28,16 +28,16 @@ function Login() {
         throw new Error('Login failed');
       }
 
-      const data = await response.json();
-      console.log('Login successful:', data);
-
+      const isAdmin = await response.json(); // Expecting true or false
       Cookies.set('authToken', `Basic ${credentials}`, { expires: 7 });
+      Cookies.set('admin', isAdmin ? 'true' : 'false', { expires: 7 });
 
-      navigate('/main');
+      console.log('Admin status:', isAdmin);
     } catch (error) {
-      setError(error.message);
+      setError('Login failed');
     } finally {
       setLoading(false);
+      navigate('/main'); // Redirect to /main after attempt
     }
   };
 
@@ -76,16 +76,8 @@ function Login() {
 
         {error && <p className="error">{error}</p>}
 
-        <button
-          type="submit"
-          className="submit-btn"
-          disabled={loading}
-        >
-          {loading ? (
-            <span>Loading...</span>
-          ) : (
-            'Přihlásit se'
-          )}
+        <button type="submit" className="submit-btn" disabled={loading}>
+          {loading ? <span>Loading...</span> : 'Přihlásit se'}
         </button>
       </form>
     </div>
