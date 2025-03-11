@@ -7,6 +7,34 @@ body {
   padding: 0;
 }
 
+#buttons {
+  button {
+    position: fixed;
+    top:20px;
+     cursor: pointer;
+     background-Color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-Radius: 4px;
+    font-Weight: bold;
+    font-Size: 1rem
+  }
+}
+
+#logout {
+  left: 20px;
+}
+
+#back {
+  right: 20px;
+}
+
+#admin {
+  left: 150px;
+  background-color: green;
+}
+
 .container {
   max-width: 800px;
   margin: 50px auto;
@@ -157,6 +185,7 @@ form input[type="file"] {
 
 .meal-name {
   font-weight: 500;
+  font-size: 1em;
 }
 
 /* Galerie – horizontálně scrollovatelná */
@@ -252,7 +281,7 @@ form input[type="file"] {
 .filter {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 10px;
 }
 
 .filter p {
@@ -287,4 +316,31 @@ form input[type="file"] {
     padding: 8px 12px;
     font-size: 0.9rem;
   }
+
+  #buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    button {
+      position: relative;
+      width: 95vw;
+      top:0;
+      left:0;
+      right:0;
+      margin: auto;
+    }
+  }
+
+  .meal-item {
+    flex-direction: column;
+  }
 }
+
+a {
+  color: black;
+
+  img {
+    height: 20px;
+  }
+}
+

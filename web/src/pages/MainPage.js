@@ -19,7 +19,6 @@ function MainPage() {
     useEffect(() => {
         const queryParams = new URLSearchParams(window.location.search);
         const filter = queryParams.get("filter");
-        console.log(filter);
 
         const fetchData = async () => {
             try {
@@ -82,46 +81,35 @@ function MainPage() {
 
     return (
         <>
-            <button
-                onClick={handleRateAppClick}
-                style={{
-                    position: 'fixed', top: '20px', right: '20px', cursor: 'pointer',
-                    backgroundColor: '#007bff', color: '#fff', border: 'none',
-                    padding: '10px 15px', borderRadius: '4px', fontWeight: 'bold', fontSize: '1rem'
-                }}
-            >
-                Ohodnoť aplikaci
-            </button>
+            <div id={'buttons'}>
+                <button id={'logout'}
+                    onClick={logOut}
+                >
+                    Logout
+                </button>
 
-            <button
-                onClick={logOut}
-                style={{
-                    position: 'fixed', top: '20px', left: '20px', cursor: 'pointer',
-                    backgroundColor: '#007bff', color: '#fff', border: 'none',
-                    padding: '10px 15px', borderRadius: '4px', fontWeight: 'bold', fontSize: '1rem'
-                }}
-            >
-                Logout
-            </button>
+                <button
+                    id={'back'}
+                    onClick={handleRateAppClick}
+                >
+                    Ohodnoť aplikaci
+                </button>
 
-            <button
-                onClick={adminNav}
-                style={{
-                    position: 'fixed', top: '20px', left: '150px', cursor: 'pointer',
-                    backgroundColor: '#37cc59', color: '#fff', border: 'none',
-                    padding: '10px 15px', borderRadius: '4px', fontWeight: 'bold', fontSize: '1rem'
-                }}
-            >
-                Admin
-            </button>
+                <button
+                    id={'admin'}
+                    onClick={adminNav}
+                >
+                    Admin
+                </button>
+            </div>
 
             <div className="container">
                 <header>
                     <div className="logo">SPŠE Ječná</div>
                     <div className="filter">
                         <p>Filters:</p>
-                        <button><FontAwesomeIcon icon={faCalendarDays}/></button>
-                        <button><FontAwesomeIcon icon={faCheck}/></button>
+                        <a href={'/main'}><FontAwesomeIcon icon={faCalendarDays}/></a>
+                        <a href={'/main?filter=unrated'}><FontAwesomeIcon icon={faCheck}/></a>
                     </div>
                     <h1 className="header-title">Přehled obědů</h1>
                 </header>

@@ -304,6 +304,7 @@ app.get('/feedback', basicAuth, async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 app.post('/feedback', basicAuth, async (req, res) => {
     try {
         const {title, description, image, rating} = req.body;
