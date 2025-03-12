@@ -347,6 +347,12 @@ app.post('/rate', basicAuth, async (req, res) => {
     }
 });
 
+app.get('/admin_catalog', basicAuth, async (req, res) => {
+    const query = 'call GetFoodCatalog()';
+    const resp = await pool.promise().execute(query);
+    res.status(200).json(resp[0]);
+})
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
