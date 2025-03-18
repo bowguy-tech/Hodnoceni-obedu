@@ -41,11 +41,11 @@ Follow these steps to set up the project:
 - **Web Scraping:** Puppeteer
 
 ## Contributors
-Robin Kremlík -project owner
-Tomáš Coufal -SCRUM master
-Maxwell Olsbro -developer
-Jan Skibar -developer
-Martin Polanecký -developer
+- Robin Kremlík -project owner
+- Tomáš Coufal -SCRUM master
+- Maxwell Olsbro -developer
+- Jan Skibar -developer
+- Martin Polanecký -developer
 
 ## License
 This project is for educational purposes.
