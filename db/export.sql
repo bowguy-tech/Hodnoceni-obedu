@@ -24,10 +24,11 @@ CREATE TABLE IF NOT EXISTS `wa_projekt`.`users` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `Name` VARCHAR(100) NOT NULL,
   `Created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `admin` TINYINT(1) NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `unique_name` (`Name` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 8
+AUTO_INCREMENT = 10
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -66,7 +67,7 @@ CREATE TABLE IF NOT EXISTS `wa_projekt`.`meals` (
   `Description` VARCHAR(255) NULL DEFAULT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 52
+AUTO_INCREMENT = 71
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -80,9 +81,10 @@ CREATE TABLE IF NOT EXISTS `wa_projekt`.`menu` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `date` (`date` ASC) VISIBLE,
   UNIQUE INDEX `date_2` (`date` ASC) VISIBLE,
-  UNIQUE INDEX `date_3` (`date` ASC) VISIBLE)
+  UNIQUE INDEX `date_3` (`date` ASC) VISIBLE,
+  INDEX `menu_date` (`date` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 140
+AUTO_INCREMENT = 188
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -97,6 +99,7 @@ CREATE TABLE IF NOT EXISTS `wa_projekt`.`item` (
   PRIMARY KEY (`id`),
   INDEX `fk_item_Meals1_idx` (`Meals_id` ASC) VISIBLE,
   INDEX `fk_item_Menu1_idx` (`Menu_id` ASC) VISIBLE,
+  INDEX `item_menu` (`Menu_id` ASC, `Meals_id` ASC) VISIBLE,
   CONSTRAINT `fk_item_Meals1`
     FOREIGN KEY (`Meals_id`)
     REFERENCES `wa_projekt`.`meals` (`id`)
@@ -108,7 +111,7 @@ CREATE TABLE IF NOT EXISTS `wa_projekt`.`item` (
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 96
+AUTO_INCREMENT = 120
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -129,6 +132,7 @@ CREATE TABLE IF NOT EXISTS `wa_projekt`.`ratings` (
   PRIMARY KEY (`id`),
   INDEX `idx_user_id` (`User_id` ASC) VISIBLE,
   INDEX `fk_Ratings_Item1_idx` (`Item_id` ASC) VISIBLE,
+  INDEX `ratings_user` (`User_id` ASC, `Item_id` ASC) VISIBLE,
   CONSTRAINT `fk_Ratings_Item1`
     FOREIGN KEY (`Item_id`)
     REFERENCES `wa_projekt`.`item` (`id`)
@@ -140,7 +144,7 @@ CREATE TABLE IF NOT EXISTS `wa_projekt`.`ratings` (
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 14
+AUTO_INCREMENT = 22
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -174,23 +178,23 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `AddItemToMenu`(
 BEGIN
     DECLARE mealId INT;
     DECLARE menuId INT;
-
+    
     SELECT id INTO mealId FROM Meals WHERE Name = mealName LIMIT 1;
-
+    
     IF mealId IS NULL THEN
-        INSERT INTO Meals (Name, Type, Description)
+        INSERT INTO Meals (Name, Type, Description) 
         VALUES (mealName, mealType, mealDescription);
-
+        
         SET mealId = LAST_INSERT_ID();
     END IF;
-
+    
     SELECT id INTO menuId FROM Menu WHERE date = menuDate LIMIT 1;
-
+    
     IF menuId IS NULL THEN
         INSERT INTO Menu (date) VALUES (menuDate);
         SET menuId = LAST_INSERT_ID();
     END IF;
-
+    
     INSERT INTO Item (Meals_id, Menu_id) VALUES (mealId, menuId);
 END$$
 
@@ -229,13 +233,13 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `AddRating`(
 BEGIN
     DECLARE userId INT;
     DECLARE existingRating INT;
-
+    
     -- Get the user ID from the username
     SELECT id INTO userId FROM Users WHERE Name = userName LIMIT 1;
-
+    
     -- Check if the user already rated this item
     SELECT id INTO existingRating FROM Ratings WHERE User_id = userId AND Item_id = itemId LIMIT 1;
-
+    
     -- If a rating already exists, prevent insertion
     IF existingRating IS NULL THEN
         INSERT INTO Ratings (User_id, Item_id, Portion_size, Food_temperature, Willing_to_pay, Food_appearance, Created_at, image)
@@ -261,7 +265,7 @@ BEGIN
 		f.time_created,
         f.rating
 	from feedback f
-		inner join users u on u.id = f.users_id;
+		inner join users u on u.id = f.users_id;	
 END$$
 
 DELIMITER ;
@@ -274,19 +278,21 @@ DELIMITER $$
 USE `wa_projekt`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `GetFoodCatalog`()
 BEGIN
-	select
-		m.name,
-		m.description,
-		avg(Portion_size) as size,
-		avg(Food_temperature) as temperature,
-		avg(Willing_to_pay) as worth,
-		avg(Food_appearance) as appearance,
-		count(r.id) as 'unmber of ratings'
-	from meals m
-		left join ratings r on r.Item_id = m.id
-	group by
-		m.name,
-		m.Description;
+    SELECT
+        m.name,
+        AVG(r.Portion_size) AS size,
+        AVG(r.Food_temperature) AS temperature,
+        AVG(r.Willing_to_pay) AS worth,
+        AVG(r.Food_appearance) AS appearance,
+        COUNT(r.id) AS number,
+        MAX(me.date) AS last_served_date
+    FROM item i
+    INNER JOIN meals m ON m.id = i.Meals_id
+    LEFT JOIN ratings r ON r.Item_id = i.id
+    INNER JOIN menu me ON me.id = i.Menu_id
+    GROUP BY m.name, me.date
+    ORDER BY last_served_date DESC;
+
 END$$
 
 DELIMITER ;
@@ -298,14 +304,14 @@ DELIMITER ;
 DELIMITER $$
 USE `wa_projekt`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `getItem`(
-	id int
+	id int 
 )
 BEGIN
-	select
+	select 
 		Name,
 		type,
 		date
-	from item
+	from item 
 		inner join meals on meals.id = meals_id
 		inner join menu on menu.id = Menu_id
     where item.id = id;
@@ -322,47 +328,68 @@ USE `wa_projekt`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `getMenu`(
     IN p_username VARCHAR(255),
     IN p_limit INT,
-    IN p_offset INT
+    IN p_offset INT,
+    IN p_order_by VARCHAR(255)
 )
 BEGIN
-    -- Create a temporary table to hold the distinct dates with the applied limit and offset
     CREATE TEMPORARY TABLE temp_dates AS
     SELECT DISTINCT mn.date
     FROM menu mn
     ORDER BY mn.date DESC
     LIMIT p_limit OFFSET p_offset;
 
-    -- Now select the menu items based on the distinct dates in the temporary table
-    SELECT
-        mn.date AS date,
-        i.id,
-        m.Name AS name,
-        m.Type AS type,
-        m.Description AS description,
-        (SELECT AVG(r.Portion_size) FROM ratings r WHERE r.Item_id = i.id) AS portion,
-        (SELECT AVG(r.Food_temperature) FROM ratings r WHERE r.Item_id = i.id) AS temperature,
-        (SELECT AVG(r.Willing_to_pay) FROM ratings r WHERE r.Item_id = i.id) AS worth,
-        (SELECT AVG(r.Food_appearance) FROM ratings r WHERE r.Item_id = i.id) AS food_appearance,
-        (SELECT GROUP_CONCAT(r.image ORDER BY r.Created_at DESC SEPARATOR ', ')
-         FROM ratings r WHERE r.Item_id = i.id LIMIT 3) AS images,
-        -- Check if the user has already rated the food item
-        IF(EXISTS (SELECT 1
-                   FROM ratings r
-                   WHERE r.Item_id = i.id
-                   AND r.user_id = (SELECT id FROM users WHERE name = p_username)), 1, 0) AS has_rated
-    FROM
-        item i
-    JOIN
-        meals m ON i.Meals_id = m.id
-    JOIN
-        menu mn ON i.Menu_id = mn.id
-    JOIN
-        temp_dates td ON mn.date = td.date
-    ORDER BY
-        mn.date DESC, i.id; -- Order by date and item ID
+    SET @query = '
+        SELECT 
+            mn.date AS date,
+            i.id,
+            m.Name AS name,
+            m.Type AS type,
+            m.Description AS description,
+            (SELECT AVG(r.Portion_size) FROM ratings r WHERE r.Item_id = i.id) AS portion,
+            (SELECT AVG(r.Food_temperature) FROM ratings r WHERE r.Item_id = i.id) AS temperature,
+            (SELECT AVG(r.Willing_to_pay) FROM ratings r WHERE r.Item_id = i.id) AS worth,
+            (SELECT AVG(r.Food_appearance) FROM ratings r WHERE r.Item_id = i.id) AS food_appearance,
+            (SELECT r.image FROM ratings r WHERE r.Item_id = i.id ORDER BY r.Created_at DESC LIMIT 1) AS images,
+            -- Check if the user has already rated the food item
+            IF(EXISTS (SELECT 1 
+                       FROM ratings r 
+                       WHERE r.Item_id = i.id 
+                       AND r.user_id = (SELECT id FROM users WHERE name = ?) 
+            ), 1, 0) AS has_rated
+        FROM 
+            item i
+        JOIN 
+            meals m ON i.Meals_id = m.id
+        JOIN 
+            menu mn ON i.Menu_id = mn.id
+        JOIN 
+            temp_dates td ON mn.date = td.date';
 
-    -- Drop the temporary table
+    IF p_order_by = 'unrated' THEN
+        SET @query = CONCAT(@query, ' HAVING has_rated = 0');
+    END IF;
+    
+    PREPARE stmt FROM @query;
+    SET @username = p_username;
+    EXECUTE stmt USING @username;
+    DEALLOCATE PREPARE stmt;
+
     DROP TEMPORARY TABLE IF EXISTS temp_dates;
+END$$
+
+DELIMITER ;
+
+-- -----------------------------------------------------
+-- procedure isAdmin
+-- -----------------------------------------------------
+
+DELIMITER $$
+USE `wa_projekt`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `isAdmin`(
+	in username varchar(50)
+)
+BEGIN
+	select admin from users where name = username;
 END$$
 
 DELIMITER ;
