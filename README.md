@@ -10,10 +10,10 @@ With the help of web scraping, user login is verified on the website. All users 
 Follow these steps to set up the project:
 
 1. **Set up the Database**  
-   - Import the provided database export file into your MySQL server.
+   - Import the provided database export file from */db* into your MySQL server.
    
 2. **Set up the Node.js API on the Server**  
-   - Navigate to the backend folder.
+   - Navigate to the backend */api* folder.
    - Install dependencies:  
      ```bash
      npm install
@@ -24,7 +24,7 @@ Follow these steps to set up the project:
      ```
 
 3. **Run the React Web Application**  
-   - Navigate to the React project folder.
+   - Navigate to the React */web* project folder.
    - Install dependencies:  
      ```bash
      npm install
